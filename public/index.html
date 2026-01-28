@@ -3,194 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARR PAYMENT | Official Gateway</title>
-    
+    <title>JARR PAYMENT | Secure Checkout</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
-        :root { --primary: #22d3ee; --secondary: #818cf8; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow-x: hidden; }
-        
-        /* Glassmorphism Premium */
-        .glass-card { 
-            background: rgba(15, 23, 42, 0.6); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .gradient-text { 
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-        }
-
-        .btn-main {
-            background: linear-gradient(135deg, #0891b2, #4f46e5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .btn-main:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(34, 211, 238, 0.4); }
-
-        #qrcode img { 
-            margin: 0 auto; 
-            border-radius: 20px; 
-            padding: 12px; 
-            background: white; 
-            box-shadow: 0 0 30px rgba(255,255,255,0.1);
-        }
-
-        /* Floating Animation */
-        .float { animation: floating 3s ease-in-out infinite; }
-        @keyframes floating {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .shimmer {
-            position: relative; overflow: hidden;
-        }
-        .shimmer::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shimmer 2s infinite;
-        }
-        @keyframes shimmer { 100% { left: 200%; } }
+        body { background: #020617; font-family: 'Inter', sans-serif; color: white; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        .qris-frame img { margin: auto; border-radius: 1.5rem; padding: 12px; background: white; box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .loader { width: 12px; height: 12px; border-radius: 50%; display: block; margin:15px auto; position: relative; color: #06b6d4; box-sizing: border-box; animation: animloader 1s linear infinite alternate; }
+        @keyframes animloader { 0% { box-shadow: -19px -3px ,  -7px 3px  ,  7px -3px , 19px 3px } 33% { box-shadow: -19px 3px , -7px -3px  ,  7px 3px , 19px -3px } 66% { box-shadow: -19px -3px , -7px 3px  ,  7px -3px , 19px 3px } 100% { box-shadow: -19px 3px , -7px -3px  ,  7px 3px , 19px -3px } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-6">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="fixed top-0 left-0 w-full h-full -z-10">
-        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/10 blur-[120px] rounded-full"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
-    </div>
-
-    <div id="main-app" class="max-w-md w-full glass-card rounded-[2.5rem] overflow-hidden animate__animated animate__fadeInUp">
-        
+    <div class="max-w-md w-full glass rounded-[2.5rem] overflow-hidden shadow-2xl animate__animated animate__zoomIn">
         <div class="p-8 text-center border-b border-white/5">
-            <div class="float inline-block p-5 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 rounded-3xl mb-4">
-                <span class="text-5xl">💎</span>
+            <div class="inline-block p-4 bg-cyan-500/10 rounded-2xl mb-4">
+                <img src="https://telegra.ph/file/2065f47171e5138125695.png" alt="Logo" class="w-12 h-12 object-contain">
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tighter">JARR <span class="gradient-text">PAYMENT</span></h1>
-            <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Professional Checkout</p>
+            <h1 class="text-2xl font-black italic text-cyan-400 tracking-tighter">JARR PAYMENT</h1>
+            <p class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase mt-1">Merchant ID: JARR-GANTENG-001</p>
         </div>
 
         <div class="p-8">
             <div id="view-input" class="space-y-6">
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="setVal(5000)" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
-                        <span class="block text-xs text-slate-500 font-bold group-hover:text-cyan-400">PAKET 1</span>
-                        <span class="text-lg font-black">5.000</span>
-                    </button>
-                    <button onclick="setVal(10000)" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
-                        <span class="block text-xs text-slate-500 font-bold group-hover:text-cyan-400">PAKET 2</span>
-                        <span class="text-lg font-black">10.000</span>
-                    </button>
+                <div class="space-y-3">
+                    <label class="text-xs font-bold text-slate-400 tracking-widest uppercase">Input Amount</label>
+                    <input type="number" id="amt" placeholder="Min. 1.000" class="w-full bg-slate-900 border border-white/10 p-5 rounded-2xl text-2xl font-black text-white outline-none focus:ring-2 ring-cyan-500/50 transition-all">
                 </div>
-
-                <div class="relative">
-                    <input type="number" id="inp-amount" placeholder="Nominal Custom..." 
-                        class="w-full bg-slate-900/50 border border-white/10 rounded-2xl p-5 text-xl font-bold outline-none focus:border-cyan-500 transition-all text-center">
-                </div>
-
-                <button onclick="prosesBayar()" id="btn-main" class="w-full py-5 btn-main rounded-2xl font-black text-lg shadow-xl uppercase tracking-wider">
-                    Generate QRIS
-                </button>
+                <button onclick="prosesQRIS()" id="btn-main" class="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl font-black text-lg uppercase shadow-xl hover:opacity-90 active:scale-95 transition-all">Pay with QRIS</button>
             </div>
 
-            <div id="view-qris" class="hidden text-center space-y-6 animate__animated animate__fadeIn">
-                <div id="qrcode" class="shimmer inline-block"></div>
-                
-                <div class="bg-black/40 p-5 rounded-2xl border border-white/5 space-y-3">
+            <div id="view-checkout" class="hidden space-y-6 animate__animated animate__fadeIn">
+                <div id="qrcode" class="qris-frame"></div>
+
+                <div class="bg-black/40 rounded-3xl p-5 border border-white/5 space-y-4">
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-400 text-xs font-bold uppercase">Total Tagihan</span>
-                        <span class="text-xl font-black text-cyan-400" id="disp-amt"></span>
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">Status</span>
+                        <span class="px-3 py-1 bg-yellow-500/10 text-yellow-500 rounded-full text-[10px] font-black uppercase animate-pulse">Waiting Payment</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-white/5 pt-3">
-                        <span class="text-slate-400 text-xs font-bold uppercase">ID Trx</span>
-                        <span class="font-mono text-[10px] text-slate-300" id="disp-id"></span>
+                    <div class="flex justify-between items-center border-t border-white/5 pt-4">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">Total Tagihan</span>
+                        <span id="disp-amt" class="text-xl font-black text-cyan-400 tracking-tighter"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">Trx ID</span>
+                        <span id="disp-id" class="text-[10px] font-mono text-slate-300 tracking-tighter"></span>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center gap-3 py-2">
-                    <div class="w-2 h-2 bg-cyan-500 rounded-full animate-ping"></div>
-                    <span class="text-cyan-500 text-[11px] font-black italic uppercase tracking-widest">Checking status...</span>
+                <div class="text-[10px] text-slate-400 bg-white/5 p-4 rounded-xl leading-relaxed">
+                    <b>Instruksi:</b> Simpan QRIS ini, buka aplikasi pembayaran Anda (DANA, OVO, ShopeePay, dll), lalu scan/unggah. Jangan tinggalkan halaman ini sampai proses verifikasi selesai.
                 </div>
 
-                <button onclick="location.reload()" class="text-slate-600 hover:text-red-400 transition-colors text-xs font-bold uppercase">
-                    ✕ Batalkan Pesanan
-                </button>
-            </div>
-
-            <div id="view-success" class="hidden text-center py-10 animate__animated animate__zoomIn">
-                <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/30">
-                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <h2 class="text-3xl font-black mb-2 italic">PAYMENT SUCCESS</h2>
-                <p class="text-slate-400 text-sm">Pesanan Anda telah diverifikasi secara instan.</p>
-                <button onclick="location.reload()" class="mt-8 w-full py-4 bg-white text-black rounded-2xl font-bold">KEMBALI KE HOME</button>
+                <span class="loader"></span>
             </div>
         </div>
     </div>
 
     <script>
-        let polling = null;
+        let checkInt = null;
 
-        function setVal(v) { document.getElementById('inp-amount').value = v; }
+        async function prosesQRIS() {
+            const nominal = document.getElementById('amt').value;
+            if(!nominal || nominal < 1000) return Swal.fire('Error', 'Minimal nominal Rp 1.000', 'error');
 
-        async function prosesBayar() {
-            const nominal = document.getElementById('inp-amount').value;
-            if (!nominal || nominal < 1000) return Swal.fire('Error', 'Minimal Rp 1.000', 'error');
-
-            const btn = document.getElementById('btn-main');
-            btn.innerHTML = `<span class="inline-block animate-spin mr-2">🌀</span> SEDANG MEMBUAT...`;
-            btn.disabled = true;
-
+            document.getElementById('btn-main').innerHTML = "Generating...";
+            
             try {
-                // SINKRON DENGAN API DI INDEX.JS
                 const res = await axios.post('/api/create', { nominal });
-                if (res.data.status) {
+                if(res.data.status) {
                     const d = res.data.data;
                     document.getElementById('view-input').classList.add('hidden');
-                    document.getElementById('view-qris').classList.remove('hidden');
+                    document.getElementById('view-checkout').classList.remove('hidden');
                     document.getElementById('disp-amt').innerText = 'Rp ' + parseInt(d.nominal).toLocaleString();
                     document.getElementById('disp-id').innerText = d.id;
 
-                    new QRCode(document.getElementById("qrcode"), { 
-                        text: d.qr_string, width: 220, height: 220,
-                        colorDark : "#000", colorLight : "#fff"
-                    });
-
-                    startCheck(d.id);
-                } else {
-                    throw new Error(res.data.message || 'Gagal dari server Atlantic');
+                    new QRCode(document.getElementById("qrcode"), { text: d.qr_string, width: 220, height: 220 });
+                    
+                    // Mulai Cek Status Otomatis
+                    checkInt = setInterval(async () => {
+                        const s = await axios.post('/api/status', { id: d.id });
+                        if(s.data.data.status === 'success') {
+                            clearInterval(checkInt);
+                            Swal.fire({
+                                title: 'PAID SUCCESS!',
+                                text: 'Pembayaran Diterima. Mengalihkan ke JarrGanteng...',
+                                icon: 'success',
+                                background: '#020617',
+                                color: '#fff',
+                                showConfirmButton: false,
+                                timer: 3000
+                            }).then(() => {
+                                // AUTO REDIRECT KE TELEGRAM
+                                window.location.href = "https://t.me/jarrGanteng";
+                            });
+                        }
+                    }, 3000);
                 }
             } catch (e) {
-                Swal.fire('Gagal!', e.message || 'Cek Saldo / Whitelist IP Atlantic', 'error');
-                btn.innerHTML = 'Generate QRIS';
-                btn.disabled = false;
+                Swal.fire('Gagal', 'Terjadi kesalahan server.', 'error');
+                document.getElementById('btn-main').innerHTML = "Pay with QRIS";
             }
-        }
-
-        function startCheck(id) {
-            polling = setInterval(async () => {
-                try {
-                    const res = await axios.post('/api/status', { id });
-                    if (res.data.data.status === 'success') {
-                        clearInterval(polling);
-                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                        document.getElementById('view-qris').classList.add('hidden');
-                        document.getElementById('view-success').classList.remove('hidden');
-                    }
-                } catch (e) {}
-            }, 3500);
         }
     </script>
 </body>
