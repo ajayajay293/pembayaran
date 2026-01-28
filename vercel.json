@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/create", "destination": "/api/create.js" },
+    { "source": "/api/status", "destination": "/api/status.js" },
+    { "source": "/api/cancel", "destination": "/api/cancel.js" },
+    { "source": "/(.*)", "destination": "/public/$1" }
+  ]
+}
