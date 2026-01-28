@@ -1,5 +1,5 @@
 {
-  "name": "jarr-payment-single-file",
+  "name": "jarr-payment-gateway",
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
@@ -7,5 +7,8 @@
     "axios": "^1.6.2",
     "qs": "^6.11.2",
     "express": "^4.18.2"
+  },
+  "scripts": {
+    "start": "node index.js"
   }
 }
