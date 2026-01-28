@@ -3,77 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARR PAYMENT | Secure Checkout</title>
+    <title>JARR PAYMENT | Official</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { background: #020617; font-family: 'Inter', sans-serif; color: white; }
+        body { background: #020617; color: white; font-family: sans-serif; }
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
-        .qris-frame img { margin: auto; border-radius: 1.5rem; padding: 12px; background: white; box-shadow: 0 0 20px rgba(255,255,255,0.1); }
-        .loader { width: 12px; height: 12px; border-radius: 50%; display: block; margin:15px auto; position: relative; color: #06b6d4; box-sizing: border-box; animation: animloader 1s linear infinite alternate; }
-        @keyframes animloader { 0% { box-shadow: -19px -3px ,  -7px 3px  ,  7px -3px , 19px 3px } 33% { box-shadow: -19px 3px , -7px -3px  ,  7px 3px , 19px -3px } 66% { box-shadow: -19px -3px , -7px 3px  ,  7px -3px , 19px 3px } 100% { box-shadow: -19px 3px , -7px -3px  ,  7px 3px , 19px -3px } }
+        #qrcode img { margin: auto; border-radius: 1.5rem; padding: 12px; background: white; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="max-w-md w-full glass rounded-[2.5rem] overflow-hidden shadow-2xl animate__animated animate__zoomIn">
-        <div class="p-8 text-center border-b border-white/5">
-            <div class="inline-block p-4 bg-cyan-500/10 rounded-2xl mb-4">
-                <img src="https://telegra.ph/file/2065f47171e5138125695.png" alt="Logo" class="w-12 h-12 object-contain">
-            </div>
-            <h1 class="text-2xl font-black italic text-cyan-400 tracking-tighter">JARR PAYMENT</h1>
-            <p class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase mt-1">Merchant ID: JARR-GANTENG-001</p>
+    <div class="max-w-md w-full glass rounded-[2.5rem] p-8 text-center animate__animated animate__fadeInUp">
+        <div class="mb-4 text-5xl">💎</div>
+        <h1 class="text-2xl font-black italic text-cyan-400">JARR PAYMENT</h1>
+        <p class="text-[10px] text-slate-500 font-bold tracking-widest uppercase mb-6">Automated Gateway</p>
+
+        <div id="view-input" class="space-y-4">
+            <input type="number" id="amt" placeholder="Nominal (Min 1.000)" class="w-full bg-slate-900 border border-white/10 p-5 rounded-2xl text-xl font-bold text-center outline-none focus:border-cyan-500">
+            <button onclick="proses()" id="btn" class="w-full py-5 bg-cyan-600 rounded-2xl font-black uppercase shadow-lg">Bayar Sekarang</button>
         </div>
 
-        <div class="p-8">
-            <div id="view-input" class="space-y-6">
-                <div class="space-y-3">
-                    <label class="text-xs font-bold text-slate-400 tracking-widest uppercase">Input Amount</label>
-                    <input type="number" id="amt" placeholder="Min. 1.000" class="w-full bg-slate-900 border border-white/10 p-5 rounded-2xl text-2xl font-black text-white outline-none focus:ring-2 ring-cyan-500/50 transition-all">
+        <div id="view-checkout" class="hidden space-y-6">
+            <div id="qrcode"></div>
+            
+            <div class="bg-black/40 p-5 rounded-2xl border border-white/5 space-y-2 text-left">
+                <div class="flex justify-between">
+                    <span class="text-xs text-slate-500">Total</span>
+                    <span id="disp-amt" class="font-bold text-cyan-400"></span>
                 </div>
-                <button onclick="prosesQRIS()" id="btn-main" class="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl font-black text-lg uppercase shadow-xl hover:opacity-90 active:scale-95 transition-all">Pay with QRIS</button>
+                <div class="flex justify-between">
+                    <span class="text-xs text-slate-500">ID TRX</span>
+                    <span id="disp-id" class="text-[10px] font-mono"></span>
+                </div>
             </div>
 
-            <div id="view-checkout" class="hidden space-y-6 animate__animated animate__fadeIn">
-                <div id="qrcode" class="qris-frame"></div>
-
-                <div class="bg-black/40 rounded-3xl p-5 border border-white/5 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-bold text-slate-500 uppercase">Status</span>
-                        <span class="px-3 py-1 bg-yellow-500/10 text-yellow-500 rounded-full text-[10px] font-black uppercase animate-pulse">Waiting Payment</span>
-                    </div>
-                    <div class="flex justify-between items-center border-t border-white/5 pt-4">
-                        <span class="text-[11px] font-bold text-slate-500 uppercase">Total Tagihan</span>
-                        <span id="disp-amt" class="text-xl font-black text-cyan-400 tracking-tighter"></span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[11px] font-bold text-slate-500 uppercase">Trx ID</span>
-                        <span id="disp-id" class="text-[10px] font-mono text-slate-300 tracking-tighter"></span>
-                    </div>
-                </div>
-
-                <div class="text-[10px] text-slate-400 bg-white/5 p-4 rounded-xl leading-relaxed">
-                    <b>Instruksi:</b> Simpan QRIS ini, buka aplikasi pembayaran Anda (DANA, OVO, ShopeePay, dll), lalu scan/unggah. Jangan tinggalkan halaman ini sampai proses verifikasi selesai.
-                </div>
-
-                <span class="loader"></span>
+            <div class="text-yellow-500 text-xs animate-pulse font-bold italic">
+                ⏳ Menunggu Pembayaran...
             </div>
         </div>
     </div>
 
     <script>
-        let checkInt = null;
-
-        async function prosesQRIS() {
+        async function proses() {
             const nominal = document.getElementById('amt').value;
-            if(!nominal || nominal < 1000) return Swal.fire('Error', 'Minimal nominal Rp 1.000', 'error');
+            if(!nominal || nominal < 1000) return Swal.fire('Error', 'Minimal 1.000', 'error');
 
-            document.getElementById('btn-main').innerHTML = "Generating...";
+            document.getElementById('btn').innerText = 'Loading...';
             
             try {
+                // Memanggil rute yang ada di index.js
                 const res = await axios.post('/api/create', { nominal });
                 if(res.data.status) {
                     const d = res.data.data;
@@ -82,31 +64,29 @@
                     document.getElementById('disp-amt').innerText = 'Rp ' + parseInt(d.nominal).toLocaleString();
                     document.getElementById('disp-id').innerText = d.id;
 
-                    new QRCode(document.getElementById("qrcode"), { text: d.qr_string, width: 220, height: 220 });
-                    
-                    // Mulai Cek Status Otomatis
-                    checkInt = setInterval(async () => {
+                    new QRCode(document.getElementById("qrcode"), { text: d.qr_string, width: 200, height: 200 });
+
+                    // Cek Status Otomatis
+                    const interval = setInterval(async () => {
                         const s = await axios.post('/api/status', { id: d.id });
                         if(s.data.data.status === 'success') {
-                            clearInterval(checkInt);
+                            clearInterval(interval);
                             Swal.fire({
-                                title: 'PAID SUCCESS!',
-                                text: 'Pembayaran Diterima. Mengalihkan ke JarrGanteng...',
                                 icon: 'success',
-                                background: '#020617',
-                                color: '#fff',
+                                title: 'SUKSES!',
+                                text: 'Pembayaran Diterima. Mengalihkan...',
                                 showConfirmButton: false,
-                                timer: 3000
+                                timer: 2000
                             }).then(() => {
-                                // AUTO REDIRECT KE TELEGRAM
+                                // REDIRECT KE TELEGRAM ANDA
                                 window.location.href = "https://t.me/jarrGanteng";
                             });
                         }
                     }, 3000);
                 }
             } catch (e) {
-                Swal.fire('Gagal', 'Terjadi kesalahan server.', 'error');
-                document.getElementById('btn-main').innerHTML = "Pay with QRIS";
+                Swal.fire('Error', 'Cek Saldo / IP Atlantic!', 'error');
+                document.getElementById('btn').innerText = 'Bayar Sekarang';
             }
         }
     </script>
