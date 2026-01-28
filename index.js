@@ -6,7 +6,6 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-// --- CONFIGURATION ---
 const BOT_TOKEN = '8526480569:AAGE95lI-BO2_q6yvlwfzPqwsyUXlN6uFxc';
 const API_KEY = 'cIr6yFSfNiCtzfOw50IIb8xvviGlG4U9o7wLe60Pvrz9os0Ff0ARoAMKdNj7YyqVYi25YtfQoyGVlPo8ce3wAuawklZJlqJF6mmN';
 const ADMIN_ID = '7810623034';
@@ -15,21 +14,17 @@ const bot = new Telegraf(BOT_TOKEN);
 
 const atlanticReq = async (path, data) => {
     return axios.post(`https://atlantich2h.com${path}`, qs.stringify({
-        api_key: API_KEY,
-        ...data
+        api_key: API_KEY, ...data
     }), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
 };
 
-// --- API ENDPOINTS ---
+// --- ROUTES ---
 
 app.post('/api/create', async (req, res) => {
     try {
         const { nominal } = req.body;
         const response = await atlanticReq('/deposit/create', {
-            nominal: nominal,
-            reff_id: 'JARR' + Date.now(),
-            type: 'ewallet',
-            metode: 'qris'
+            nominal, reff_id: 'JARR' + Date.now(), type: 'ewallet', metode: 'qris'
         });
         res.json(response.data);
     } catch (e) {
@@ -48,19 +43,9 @@ app.post('/api/status', async (req, res) => {
         }
         
         if (data && data.status === 'success') {
-            bot.telegram.sendMessage(ADMIN_ID, `✅ <b>PEMBAYARAN DITERIMA</b>\nID: <code>${id}</code>\nNominal: <code>Rp ${data.nominal}</code>\nWaktu: ${new Date().toLocaleString()}`, { parse_mode: 'HTML' });
+            bot.telegram.sendMessage(ADMIN_ID, `✅ <b>PEMBAYARAN MASUK</b>\nID: ${id}\nNominal: Rp ${data.nominal}`);
         }
         res.json(s.data);
-    } catch (e) {
-        res.status(500).json({ status: false });
-    }
-});
-
-app.post('/api/cancel', async (req, res) => {
-    try {
-        const { id } = req.body;
-        const response = await atlanticReq('/deposit/cancel', { id });
-        res.json(response.data);
     } catch (e) {
         res.status(500).json({ status: false });
     }
