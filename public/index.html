@@ -3,204 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARR PAYMENT | Official</title>
+    <title>JARR PAYMENT | Official Gateway</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #05070a; color: white; overflow-x: hidden; }
-        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3); }
-        .gradient-text { background: linear-gradient(135deg, #22d3ee, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn-primary { background: linear-gradient(135deg, #06b6d4, #3b82f6); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.5); }
-        #qrcode img { margin: 0 auto; border-radius: 1.5rem; padding: 15px; background: white; border: 4px solid #1e293b; }
-        .loader-line { height: 3px; width: 100%; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; border-radius: 10px; }
-        .loader-line::after { content: ''; position: absolute; left: -50%; height: 3px; width: 50%; background: #22d3ee; animation: loading 1.5s infinite; }
-        @keyframes loading { 0% { left: -50%; } 100% { left: 100%; } }
+        :root { --primary: #22d3ee; --secondary: #818cf8; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #020617; color: white; overflow-x: hidden; }
+        
+        /* Glassmorphism Premium */
+        .glass-card { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .gradient-text { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #0891b2, #4f46e5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-main:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(34, 211, 238, 0.4); }
+
+        #qrcode img { 
+            margin: 0 auto; 
+            border-radius: 20px; 
+            padding: 12px; 
+            background: white; 
+            box-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+
+        /* Floating Animation */
+        .float { animation: floating 3s ease-in-out infinite; }
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .shimmer {
+            position: relative; overflow: hidden;
+        }
+        .shimmer::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 100% { left: 200%; } }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-6">
 
-    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-900/20 blur-[120px] rounded-full"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-900/20 blur-[120px] rounded-full"></div>
+    <div class="fixed top-0 left-0 w-full h-full -z-10">
+        <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/10 blur-[120px] rounded-full"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 blur-[120px] rounded-full"></div>
+    </div>
 
-    <div id="app-container" class="max-w-md w-full glass-card rounded-[3rem] overflow-hidden animate__animated animate__fadeInUp">
+    <div id="main-app" class="max-w-md w-full glass-card rounded-[2.5rem] overflow-hidden animate__animated animate__fadeInUp">
         
-        <div class="p-8 text-center relative border-b border-white/5">
-            <div class="mb-4 inline-flex items-center justify-center w-20 h-20 bg-gradient-to-tr from-cyan-500/20 to-indigo-500/20 rounded-3xl rotate-12 animate-pulse">
-                <span class="text-5xl -rotate-12">💎</span>
+        <div class="p-8 text-center border-b border-white/5">
+            <div class="float inline-block p-5 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 rounded-3xl mb-4">
+                <span class="text-5xl">💎</span>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tighter">JARR <span class="gradient-text">PAYMENT</span></h1>
-            <p class="text-slate-500 text-xs font-bold mt-2 tracking-[0.2em] uppercase">Secure Digital Gateway</p>
+            <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Professional Checkout</p>
         </div>
 
         <div class="p-8">
             <div id="view-input" class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="setNominal(5000)" class="group p-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl transition-all">
-                        <span class="block text-xs text-slate-500 font-bold mb-1 uppercase">Paket A</span>
-                        <span class="block text-lg font-black italic">Rp 5.000</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="setVal(5000)" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
+                        <span class="block text-xs text-slate-500 font-bold group-hover:text-cyan-400">PAKET 1</span>
+                        <span class="text-lg font-black">5.000</span>
                     </button>
-                    <button onclick="setNominal(10000)" class="group p-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl transition-all">
-                        <span class="block text-xs text-slate-500 font-bold mb-1 uppercase">Paket B</span>
-                        <span class="block text-lg font-black italic">Rp 10.000</span>
+                    <button onclick="setVal(10000)" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all group">
+                        <span class="block text-xs text-slate-500 font-bold group-hover:text-cyan-400">PAKET 2</span>
+                        <span class="text-lg font-black">10.000</span>
                     </button>
                 </div>
 
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                        <span class="text-cyan-500 font-bold text-xl leading-none">Rp</span>
-                    </div>
-                    <input type="number" id="custom-amount" placeholder="0" 
-                        class="w-full bg-black/40 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-2xl font-black outline-none focus:border-cyan-500 focus:glow-cyan transition-all placeholder:text-slate-800">
+                <div class="relative">
+                    <input type="number" id="inp-amount" placeholder="Nominal Custom..." 
+                        class="w-full bg-slate-900/50 border border-white/10 rounded-2xl p-5 text-xl font-bold outline-none focus:border-cyan-500 transition-all text-center">
                 </div>
 
-                <div class="bg-cyan-500/5 p-4 rounded-2xl border border-cyan-500/10">
-                    <p class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider mb-1">📢 Informasi</p>
-                    <p class="text-xs text-slate-400 leading-relaxed">Pastikan nominal sesuai. Pembayaran akan diverifikasi otomatis oleh sistem <b>Atlantic H2H</b>.</p>
-                </div>
-
-                <button onclick="createOrder()" id="btn-pay" class="w-full py-5 btn-primary rounded-2xl font-black text-lg tracking-tight uppercase">
-                    Bayar Sekarang
-                </button>
-                <p class="text-center text-[10px] text-slate-600 font-medium">Merchant ID: JARR-GANTENG-001</p>
-            </div>
-
-            <div id="view-pending" class="hidden text-center space-y-6 animate__animated animate__zoomIn">
-                <div id="qrcode" class="inline-block relative">
-                    <div id="qr-loading" class="absolute inset-0 flex items-center justify-center bg-slate-900 rounded-[1.5rem]">
-                         <div class="loader-line w-24"></div>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/5">
-                        <div class="text-left">
-                            <span class="text-[10px] text-slate-500 font-bold uppercase block">Total Bayar</span>
-                            <span class="text-xl font-black text-cyan-400" id="disp-nominal"></span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-[10px] text-slate-500 font-bold uppercase block">Status</span>
-                            <span class="text-xs font-bold text-yellow-500 animate-pulse italic">PENDING...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="loader-line"></div>
-                <p class="text-[11px] text-slate-500 font-medium italic">Silakan scan QRIS diatas melalui Dana, OVO, ShopeePay, atau m-Banking Anda.</p>
-
-                <button onclick="cancelOrder()" class="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold transition-all uppercase tracking-widest">
-                    Batalkan Transaksi
+                <button onclick="prosesBayar()" id="btn-main" class="w-full py-5 btn-main rounded-2xl font-black text-lg shadow-xl uppercase tracking-wider">
+                    Generate QRIS
                 </button>
             </div>
 
-            <div id="view-success" class="hidden text-center py-6 animate__animated animate__bounceIn">
-                <div class="relative inline-block mb-6">
-                    <div class="absolute inset-0 bg-green-500 blur-2xl opacity-30 rounded-full animate-pulse"></div>
-                    <div class="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-2xl">
-                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                </div>
-                <h2 class="text-3xl font-black mb-2">BERHASIL!</h2>
-                <p class="text-slate-400 text-sm px-4 leading-relaxed">Pembayaran telah kami terima. Detail transaksi telah dikirim ke bot notifikasi.</p>
+            <div id="view-qris" class="hidden text-center space-y-6 animate__animated animate__fadeIn">
+                <div id="qrcode" class="shimmer inline-block"></div>
                 
-                <div class="mt-8 pt-8 border-t border-white/5">
-                    <button onclick="location.reload()" class="w-full py-4 bg-white text-black rounded-2xl font-black text-lg hover:bg-slate-200 transition-colors">
-                        KEMBALI KE BERANDA
-                    </button>
+                <div class="bg-black/40 p-5 rounded-2xl border border-white/5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 text-xs font-bold uppercase">Total Tagihan</span>
+                        <span class="text-xl font-black text-cyan-400" id="disp-amt"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-white/5 pt-3">
+                        <span class="text-slate-400 text-xs font-bold uppercase">ID Trx</span>
+                        <span class="font-mono text-[10px] text-slate-300" id="disp-id"></span>
+                    </div>
                 </div>
+
+                <div class="flex items-center justify-center gap-3 py-2">
+                    <div class="w-2 h-2 bg-cyan-500 rounded-full animate-ping"></div>
+                    <span class="text-cyan-500 text-[11px] font-black italic uppercase tracking-widest">Checking status...</span>
+                </div>
+
+                <button onclick="location.reload()" class="text-slate-600 hover:text-red-400 transition-colors text-xs font-bold uppercase">
+                    ✕ Batalkan Pesanan
+                </button>
             </div>
 
+            <div id="view-success" class="hidden text-center py-10 animate__animated animate__zoomIn">
+                <div class="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/30">
+                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-3xl font-black mb-2 italic">PAYMENT SUCCESS</h2>
+                <p class="text-slate-400 text-sm">Pesanan Anda telah diverifikasi secara instan.</p>
+                <button onclick="location.reload()" class="mt-8 w-full py-4 bg-white text-black rounded-2xl font-bold">KEMBALI KE HOME</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentId = null;
-        let checkInterval = null;
+        let polling = null;
 
-        function setNominal(v) { 
-            const input = document.getElementById('custom-amount');
-            input.value = v;
-            input.classList.add('animate__animated', 'animate__headShake');
-            setTimeout(() => input.classList.remove('animate__animated', 'animate__headShake'), 500);
-        }
+        function setVal(v) { document.getElementById('inp-amount').value = v; }
 
-        async function createOrder() {
-            const nominal = document.getElementById('custom-amount').value;
-            if (!nominal || nominal < 1000) {
-                return Swal.fire({ icon: 'error', title: 'Oops!', text: 'Minimal nominal adalah Rp 1.000', background: '#0f172a', color: '#fff' });
-            }
+        async function prosesBayar() {
+            const nominal = document.getElementById('inp-amount').value;
+            if (!nominal || nominal < 1000) return Swal.fire('Error', 'Minimal Rp 1.000', 'error');
 
-            const btn = document.getElementById('btn-pay');
-            btn.innerHTML = `<span class="inline-block animate-spin mr-2">⏳</span> MEMPROSES...`;
+            const btn = document.getElementById('btn-main');
+            btn.innerHTML = `<span class="inline-block animate-spin mr-2">🌀</span> SEDANG MEMBUAT...`;
             btn.disabled = true;
 
             try {
+                // SINKRON DENGAN API DI INDEX.JS
                 const res = await axios.post('/api/create', { nominal });
                 if (res.data.status) {
                     const d = res.data.data;
-                    currentId = d.id;
-                    
                     document.getElementById('view-input').classList.add('hidden');
-                    document.getElementById('view-pending').classList.remove('hidden');
-                    document.getElementById('disp-nominal').innerText = 'Rp ' + parseInt(d.nominal).toLocaleString();
+                    document.getElementById('view-qris').classList.remove('hidden');
+                    document.getElementById('disp-amt').innerText = 'Rp ' + parseInt(d.nominal).toLocaleString();
+                    document.getElementById('disp-id').innerText = d.id;
 
                     new QRCode(document.getElementById("qrcode"), { 
-                        text: d.qr_string, 
-                        width: 240, 
-                        height: 240,
-                        colorDark : "#000000",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
+                        text: d.qr_string, width: 220, height: 220,
+                        colorDark : "#000", colorLight : "#fff"
                     });
 
-                    setTimeout(() => { document.getElementById('qr-loading').style.display = 'none'; }, 800);
-                    startPolling(d.id);
+                    startCheck(d.id);
+                } else {
+                    throw new Error(res.data.message || 'Gagal dari server Atlantic');
                 }
             } catch (e) {
-                Swal.fire('Gagal', 'Terjadi kesalahan pada server.', 'error');
-                btn.innerHTML = 'Bayar Sekarang';
+                Swal.fire('Gagal!', e.message || 'Cek Saldo / Whitelist IP Atlantic', 'error');
+                btn.innerHTML = 'Generate QRIS';
                 btn.disabled = false;
             }
         }
 
-        function startPolling(id) {
-            checkInterval = setInterval(async () => {
+        function startCheck(id) {
+            polling = setInterval(async () => {
                 try {
                     const res = await axios.post('/api/status', { id });
                     if (res.data.data.status === 'success') {
-                        clearInterval(checkInterval);
-                        confetti({ fontSize: 10, particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#22d3ee', '#818cf8', '#ffffff'] });
-                        document.getElementById('view-pending').classList.add('hidden');
+                        clearInterval(polling);
+                        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                        document.getElementById('view-qris').classList.add('hidden');
                         document.getElementById('view-success').classList.remove('hidden');
                     }
                 } catch (e) {}
-            }, 3000);
-        }
-
-        async function cancelOrder() {
-            const result = await Swal.fire({
-                title: 'Batalkan?',
-                text: "Transaksi akan dihapus dari sistem.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                background: '#0f172a',
-                color: '#fff'
-            });
-
-            if (result.isConfirmed) {
-                clearInterval(checkInterval);
-                if (currentId) await axios.post('/api/cancel', { id: currentId });
-                location.reload();
-            }
+            }, 3500);
         }
     </script>
 </body>
