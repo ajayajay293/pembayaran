@@ -1,4 +1,4 @@
-const { Telegraf, Markup } = require('telegraf');
+const { Telegraf } = require('telegraf');
 const axios = require('axios');
 const qs = require('qs');
 const express = require('express');
@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
-// Layani file statis dari folder public
+// Layani file statis (HTML)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- CONFIG ---
@@ -17,34 +17,54 @@ const ADMIN_ID = '7810623034';
 
 const bot = new Telegraf(BOT_TOKEN);
 
-const atlanticReq = async (path, data) => {
-    return axios.post(`https://atlantich2h.com${path}`, qs.stringify({
+// Fungsi request ke AtlanticH2H
+const atlanticReq = async (endpoint, data) => {
+    return axios.post(`https://atlantich2h.com${endpoint}`, qs.stringify({
         api_key: API_KEY,
         ...data
-    }), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+    }), { 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' } 
+    });
 };
 
 // --- ROUTES API ---
 
-// Create QRIS
+// 1. Create QRIS
 app.post('/api/create', async (req, res) => {
     try {
         const { nominal } = req.body;
+        
+        console.log(`[LOG] Mencoba membuat QRIS nominal: ${nominal}`);
+
         const response = await atlanticReq('/deposit/create', {
             nominal: nominal,
             reff_id: 'JARR' + Date.now(),
-            type: 'ewallet',
+            type: 'ewallet', // Jika error berlanjut, coba ganti ke 'deposit'
             metode: 'qris'
         });
+
+        // Log respon asli dari Atlantic untuk debug
+        console.log("[ATLANTIC RESPONSE]:", response.data);
+
+        if (response.data.status === false) {
+            // Mengirim pesan error asli dari Atlantic (misal: "Saldo tidak cukup" atau "Minimal deposit 10.000")
+            return res.status(400).json({ 
+                status: false, 
+                message: response.data.message || "Provider menolak permintaan." 
+            });
+        }
         
-        // Kirim respon asli dari Atlantic agar kita bisa lihat pesan errornya di console browser
         res.json(response.data);
     } catch (e) {
-        res.status(500).json({ status: false, message: e.message });
+        console.error("[SYSTEM ERROR]:", e.response?.data || e.message);
+        res.status(500).json({ 
+            status: false, 
+            message: "Gagal terhubung ke API Atlantic. Cek koneksi/whitelist IP." 
+        });
     }
 });
 
-// Check Status
+// 2. Check Status
 app.post('/api/status', async (req, res) => {
     try {
         const { id } = req.body;
@@ -59,8 +79,16 @@ app.post('/api/status', async (req, res) => {
     }
 });
 
-bot.launch();
+// Jalankan Bot
+bot.launch().then(() => console.log("Bot Telegram Aktif"));
+
+// Jalankan Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`-----------------------------------`);
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Pastikan IP Server sudah di Whitelist!`);
+    console.log(`-----------------------------------`);
+});
 
 module.exports = app;
